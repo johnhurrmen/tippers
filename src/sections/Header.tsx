@@ -5,6 +5,7 @@ import styled from 'styled-components'
 import { Modal } from '../components/Modal'
 import TokenSelect from './TokenSelect'
 import { UserButton } from './UserButton'
+import { useAccount, useConnect, useDisconnect } from 'wagmi'
 
 const Bonus = styled.button`
   all: unset;
@@ -52,6 +53,10 @@ export default function Header() {
   const balance = useUserBalance()
   const [bonusHelp, setBonusHelp] = React.useState(false)
   const [jackpotHelp, setJackpotHelp] = React.useState(false)
+
+  const account = useAccount()
+  const { connectors, connect, status, error } = useConnect()
+  const { disconnect } = useDisconnect()
 
   return (
     <>
@@ -101,6 +106,36 @@ export default function Header() {
               ✨ <TokenValue amount={balance.bonusBalance} />
             </Bonus>
           )}
+
+          <div>
+            status: {account.status}
+            <br />
+            addresses: {JSON.stringify(account.addresses)}
+            <br />
+            chainId: {account.chainId}
+          </div>
+
+          {account.status === 'connected' && (
+            <button type="button" onClick={() => disconnect()}>
+              Disconnect
+            </button>
+          )}
+
+          <div>
+            <h2>Connect</h2>
+            {connectors.map((connector) => (
+              <button
+                key={connector.uid}
+                onClick={() => connect({ connector })}
+                type="button"
+              >
+                {connector.name}
+              </button>
+            ))}
+            <div>{status}</div>
+            <div>{error?.message}</div>
+          </div>
+
           <TokenSelect />
           <UserButton />
         </div>
