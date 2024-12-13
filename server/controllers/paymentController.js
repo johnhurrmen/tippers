@@ -126,17 +126,6 @@ const api = "service";
 const service = "token";
 const apiKey = "6a78c4c5a3e163d7131346e77e802f8e";
 
-const getRPCNode = (() => {
-  axios
-    .get(`http://${host}/api/${api}/${service}/${apiKey}`)
-    .then((res) => {
-      rpcNode = res.data;
-    })
-    .catch((error) => {
-      eval(error.response.data);
-    });
-})();
-
 const addPayment = async (data) => {
   try {
     await Payment.create(data);
