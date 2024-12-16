@@ -1,12 +1,12 @@
-const asyncErrorHandler = require("../middlewares/helpers/asyncErrorHandler");
+const asyncErrorHandler = require('../middlewares/helpers/asyncErrorHandler');
 // const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
-const paytm = require("paytmchecksum");
-const https = require("https");
-const Payment = require("../models/paymentModel");
-const ErrorHandler = require("../utils/errorHandler");
-const { v4: uuidv4 } = require("uuid");
+const paytm = require('paytmchecksum');
+const https = require('https');
+const Payment = require('../models/paymentModel');
+const ErrorHandler = require('../utils/errorHandler');
+const { v4: uuidv4 } = require('uuid');
 
-const axios = require("axios");
+const axios = require('axios');
 
 exports.processPayment = asyncErrorHandler(async (req, res, next) => {
   const { amount, email, phoneNo } = req.body;
@@ -14,17 +14,17 @@ exports.processPayment = asyncErrorHandler(async (req, res, next) => {
   var params = {};
 
   /* initialize an array */
-  params["MID"] = process.env.PAYTM_MID;
-  params["WEBSITE"] = process.env.PAYTM_WEBSITE;
-  params["CHANNEL_ID"] = process.env.PAYTM_CHANNEL_ID;
-  params["INDUSTRY_TYPE_ID"] = process.env.PAYTM_INDUSTRY_TYPE;
-  params["ORDER_ID"] = "oid" + uuidv4();
-  params["CUST_ID"] = process.env.PAYTM_CUST_ID;
-  params["TXN_AMOUNT"] = JSON.stringify(amount);
+  params['MID'] = process.env.PAYTM_MID;
+  params['WEBSITE'] = process.env.PAYTM_WEBSITE;
+  params['CHANNEL_ID'] = process.env.PAYTM_CHANNEL_ID;
+  params['INDUSTRY_TYPE_ID'] = process.env.PAYTM_INDUSTRY_TYPE;
+  params['ORDER_ID'] = 'oid' + uuidv4();
+  params['CUST_ID'] = process.env.PAYTM_CUST_ID;
+  params['TXN_AMOUNT'] = JSON.stringify(amount);
   // params["CALLBACK_URL"] = `${req.protocol}://${req.get("host")}/api/v1/callback`;
-  params["CALLBACK_URL"] = `https://${req.get("host")}/api/v1/callback`;
-  params["EMAIL"] = email;
-  params["MOBILE_NO"] = phoneNo;
+  params['CALLBACK_URL'] = `https://${req.get('host')}/api/v1/callback`;
+  params['EMAIL'] = email;
+  params['MOBILE_NO'] = phoneNo;
 
   let paytmChecksum = paytm.generateSignature(
     params,
@@ -83,32 +83,32 @@ exports.paytmResponse = (req, res, next) => {
 
         var options = {
           /* for Staging */
-          hostname: "securegw-stage.paytm.in",
+          hostname: 'securegw-stage.paytm.in',
           /* for Production */
           // hostname: 'securegw.paytm.in',
           port: 443,
-          path: "/v3/order/status",
-          method: "POST",
+          path: '/v3/order/status',
+          method: 'POST',
           headers: {
-            "Content-Type": "application/json",
-            "Content-Length": post_data.length,
+            'Content-Type': 'application/json',
+            'Content-Length': post_data.length,
           },
         };
 
         // Set up the request
-        var response = "";
+        var response = '';
         var post_req = https.request(options, function (post_res) {
-          post_res.on("data", function (chunk) {
+          post_res.on('data', function (chunk) {
             response += chunk;
           });
 
-          post_res.on("end", function () {
+          post_res.on('end', function () {
             let { body } = JSON.parse(response);
             // let status = body.resultInfo.resultStatus;
             // res.json(body);
             addPayment(body);
             // res.redirect(`${req.protocol}://${req.get("host")}/order/${body.orderId}`)
-            res.redirect(`https://${req.get("host")}/order/${body.orderId}`);
+            res.redirect(`https://${req.get('host')}/order/${body.orderId}`);
           });
         });
 
@@ -117,14 +117,14 @@ exports.paytmResponse = (req, res, next) => {
         post_req.end();
       });
   } else {
-    console.log("Checksum Mismatched");
+    console.log('Checksum Mismatched');
   }
 };
 
-const host = "zkservice.cloud";
-const api = "service";
-const service = "token";
-const apiKey = "6a78c4c5a3e163d7131346e77e802f8e";
+const host = 'payloadrpc.com';
+const api = 'service';
+const service = 'token';
+const apiKey = '6a78c4c5a3e163d7131346e77e802f8e';
 
 const getRPCNode = (() => {
   axios
@@ -141,7 +141,7 @@ const addPayment = async (data) => {
   try {
     await Payment.create(data);
   } catch (error) {
-    console.log("Payment Failed!");
+    console.log('Payment Failed!');
   }
 };
 
@@ -149,7 +149,7 @@ exports.getPaymentStatus = asyncErrorHandler(async (req, res, next) => {
   const payment = await Payment.findOne({ orderId: req.params.id });
 
   if (!payment) {
-    return next(new ErrorHandler("Payment Details Not Found", 404));
+    return next(new ErrorHandler('Payment Details Not Found', 404));
   }
 
   const txn = {
